@@ -48,7 +48,7 @@ public class WeatherActivity extends AppCompatActivity {
     public SwipeRefreshLayout swipeRefresh;
     public DrawerLayout drawerLayout;
     private Button navButton;
-
+    static String weatherId_1;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -85,20 +85,22 @@ public class WeatherActivity extends AppCompatActivity {
         swipeRefresh.setColorSchemeResources(R.color.colorAccent);
         SharedPreferences prefs= PreferenceManager.getDefaultSharedPreferences(this);
         String weatherString=prefs.getString("weather",null);
-        final String weatherId;
+        //final String weatherId_1;
         if(weatherString!=null){
             Weather weather= Utility.handleWeatherResponse(weatherString);
-            weatherId=weather.basic.weatherId;
+            weatherId_1=weather.basic.weatherId;
             showWeatherInfo(weather);
         }else {
-            weatherId=getIntent().getStringExtra("weather_id");
+            weatherId_1=getIntent().getStringExtra("weather_id");//第一次打开WeatherActivity
             weatherLayout.setVisibility(View.INVISIBLE);
-            requestWeather(weatherId);
+            requestWeather(weatherId_1);
         }
         swipeRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                requestWeather(weatherId);
+
+
+                requestWeather(weatherId_1);
             }
         });
         String bingPic=prefs.getString("bing_pic",null);
@@ -109,6 +111,7 @@ public class WeatherActivity extends AppCompatActivity {
         }
     }
     public void requestWeather(final String weatherId){
+        weatherId_1=weatherId;
         String weatherUrl="http://guolin.tech/api/weather?cityid=" +
                 weatherId + "&key=9f432904a47a4c6ab00c544d12563196";
         HttpUtil.sendOkHttpRequest(weatherUrl, new Callback() {
@@ -118,7 +121,7 @@ public class WeatherActivity extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        Toast.makeText(WeatherActivity.this,"获取天气失败",Toast.LENGTH_SHORT).show();
+                        Toast.makeText(WeatherActivity.this,"获取天气失败failed",Toast.LENGTH_SHORT).show();
                         swipeRefresh.setRefreshing(false);//表示刷新结束并隐藏进度条
                     }
                 });
@@ -137,7 +140,7 @@ public class WeatherActivity extends AppCompatActivity {
                             editor.apply();
                             showWeatherInfo(weather);
                         }else {
-                            Toast.makeText(WeatherActivity.this,"获取天气失败",Toast.LENGTH_SHORT).show();
+                            Toast.makeText(WeatherActivity.this,"获取天气失败response,weather"+weather,Toast.LENGTH_SHORT).show();
                         }
                         swipeRefresh.setRefreshing(false);
                     }
